@@ -3,30 +3,41 @@ import { Text, View, StyleSheet, FlatList, Button, TouchableOpacity } from 'reac
 import {Context as BlogContext} from '../context/BlogContext';
 import { Feather } from '@expo/vector-icons';
 
-const IndexScreen = () => {
+const IndexScreen = ({ navigation }) => {
     const {state, addBlogPost, delBlogPost } = useContext(BlogContext);
 
     return (
         <View>
-            <Button title="Add Post" onPress={addBlogPost} />
             <FlatList
                 data={state}
                 keyExtractor={(blogpost) => blogpost.id}
                 renderItem={({item}) => {
                     return(
-                        <View style={styles.row}>
-                            <Text style={styles.txt}>
-                                {item.title} - {item.id}
-                            </Text>
-                            <TouchableOpacity onPress={() => delBlogPost(item.id) }>
-                                <Feather style={styles.delicon} name="trash" />
-                            </TouchableOpacity>
-                        </View>
-                    )
+                        <TouchableOpacity onPress={ () => navigation.navigate('ShowScreen', { id:item.id }) }>
+                            <View style={styles.row}>
+                                <Text style={styles.txt}>
+                                    {item.title} - {item.id}
+                                </Text>
+                                <TouchableOpacity onPress={() => delBlogPost(item.id) }>
+                                    <Feather style={styles.delicon} name="trash" />
+                                </TouchableOpacity>
+                            </View>
+                        </TouchableOpacity>
+                    );
                 }}
             />
         </View>
     );
+}
+
+IndexScreen.navigationOptions = ({ navigation }) => {
+    return {
+        headerRight: () =>
+            <TouchableOpacity onPress={() => navigation.navigate('CreateScreen')}>
+                <Feather name="plus" size={30} />
+            </TouchableOpacity>
+        
+    }
 }
 
 const styles = StyleSheet.create({
