@@ -1,8 +1,14 @@
 import React, { useReducer } from 'react';
+import jsonServer from '../api/jsonServer';
+
 import createDataContext from '../createDataContext';    
+import Axios from 'axios';
 
 const blogReducer = (state, action) => {
     switch(action.type){
+        case 'get_blogPosts':
+            return action.payload;
+
         case 'add_blog_post':
             return [...state, {id: '' + Math.floor(Math.random()*99999), title: action.payload.title, content: action.payload.content }];
 
@@ -27,10 +33,18 @@ const blogReducer = (state, action) => {
     }
 }
 
+const getblogPosts = (dispatch) => {
+    return async () => {
+        const response = await jsonServer.get('/blogposts');
+        dispatch({ type: 'get_blogPosts', payload: response.data });
+    }
+}
+
 const addBlogPost = (dispatch) => {
-    return (title, content, callback) => {
+    return async (title, content, callback) => {
         try{
-            dispatch({ type: 'add_blog_post', payload: {title, content} } );
+            await jsonServer.post('/blogposts', { title, content });
+            // dispatch({ type: 'add_blog_post', payload: {title, content} } );
             if(callback){
                 callback();    
             }
@@ -42,13 +56,17 @@ const addBlogPost = (dispatch) => {
 }
 
 const delBlogPost = (dispatch) => {
-    return (id) => {
+    return async (id) => {
+        await jsonServer.delete(`/blogposts/${id}`);
+
         dispatch({ type: 'del_blog_post', payload: id });
     }
 }
 
 const editBlogPost = (dispatch) => {
-    return (id, title, content, callback) => {
+    return async (id, title, content, callback) => {
+        await jsonServer.put(`/blogposts/${id}`, { title, content });
+
         dispatch({ type: 'edit_blog_post', payload: { id, title, content } });
         if (callback){
             callback();
@@ -58,6 +76,6 @@ const editBlogPost = (dispatch) => {
     
 export const { Context, Provider } = createDataContext(
     blogReducer,
-    { addBlogPost, delBlogPost, editBlogPost },
-    [{id:''+1, title: 'Blog Post 1', content: 'Blog Content 1'}]
+    { addBlogPost, delBlogPost, editBlogPost, getblogPosts },
+    []
 );
